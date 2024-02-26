@@ -10,6 +10,15 @@ youtube:
   videoId: REPLACE_WITH_YOUR_YOUTUBE_VIDEO_ID
 ```
 
+### Build
+``` sh
+./gradlew clean build
+```
+The packages will be located in `./build/libs` directory
+
+### Deployment
+Upload jar with `aws` prefix to AWS Lambda function with Java 21 runtime
+
 ### Thumbnail
 Replace thumbnail.png in [resources/static](src%2Fmain%2Fresources%2Fstatic) directory for using your thumbnail.
 
