@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    id 'com.github.johnrengelman.shadow' version "${shadowJarVersion}"
+    id 'org.springframework.boot.experimental.thin-launcher' version "${thinLauncherVersion}"
+}
+
+group = "${group}"
+version = "${version}"
+sourceCompatibility = "${javaVersion}"
+
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+assemble.dependsOn = [thinJar, shadowJar]
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+}
+
+shadowJar.mustRunAfter thinJar
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
+
+shadowJar {
+    archiveClassifier = 'aws'
+    manifest {
+        inheritFrom(project.tasks.thinJar.manifest)
+    }
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    append 'META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports'
+    append 'META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories']
+        mergeStrategy = "append"
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.cloud:spring-cloud-function-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.springframework.cloud:spring-cloud-function-adapter-aws'
+
+    implementation "org.apache.commons:commons-collections4:${commonsCollectionsVersion}"
+    implementation "jakarta.validation:jakarta.validation-api:${jakartaValidationVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
