@@ -12,3 +12,6 @@ youtube:
 
 ### Thumbnail
 Replace thumbnail.png in [resources/static](src%2Fmain%2Fresources%2Fstatic) directory for using your thumbnail.
+
+### Walkthrough
+https://www.youtube.com/watch?v=Tn_tHlhkO1M
